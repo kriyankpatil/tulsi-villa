@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createSession, hashPassword } from "@/lib/auth";
+import { createSession, hashPassword, SESSION_COOKIE } from "@/lib/auth";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
   const { username, password } = await req.json();
@@ -23,8 +26,10 @@ export async function POST(req: NextRequest) {
       },
     });
   }
-  await createSession(admin.id);
-  return NextResponse.json({ id: admin.id, name: admin.name, email: admin.email, role: admin.role });
+  const { token, expiresAt } = await createSession(admin.id);
+  const res = NextResponse.json({ id: admin.id, name: admin.name, email: admin.email, role: admin.role });
+  res.cookies.set(SESSION_COOKIE, token, { httpOnly: true, sameSite: "lax", expires: expiresAt, path: "/", secure: true });
+  return res;
 }
 
 

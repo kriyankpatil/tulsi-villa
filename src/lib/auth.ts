@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { randomBytes } from "crypto";
 
-const SESSION_COOKIE = "tv_session";
+export const SESSION_COOKIE = "tv_session";
 
 export async function hashPassword(password: string): Promise<string> {
   const salt = await bcrypt.genSalt(10);
@@ -14,12 +14,18 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
   return bcrypt.compare(password, hash);
 }
 
-export async function createSession(userId: number) {
+export async function createSession(userId: number): Promise<{ token: string; expiresAt: Date }> {
   const token = randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 7);
   await prisma.session.create({ data: { token, userId, expiresAt } });
-  const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE, token, { httpOnly: true, sameSite: "lax", expires: expiresAt, path: "/" });
+  // Best-effort set via headers API (works in server actions). Route handlers will also set on response.
+  try {
+    const cookieStore = await cookies();
+    cookieStore.set(SESSION_COOKIE, token, { httpOnly: true, sameSite: "lax", expires: expiresAt, path: "/", secure: true });
+  } catch {
+    // ignore if not available in this context
+  }
+  return { token, expiresAt };
 }
 
 export async function destroySession() {
