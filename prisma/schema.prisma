@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ReceiptStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum Role {
+  MEMBER
+  ADMIN
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  name         String   @unique
+  rhNo         String?
+  email        String?
+  passwordHash String
+  role         Role     @default(MEMBER)
+  createdAt    DateTime @default(now())
+  receipts     Receipt[]
+  sessions     Session[]
+}
+
+model Receipt {
+  id             Int            @id @default(autoincrement())
+  name           String
+  rhNo           String
+  amountPaise    Int
+  description    String?
+  screenshotPath String?
+  status         ReceiptStatus  @default(PENDING)
+  createdAt      DateTime       @default(now())
+  approvedAt     DateTime?
+  date           DateTime       @default(now())
+  memberId       Int?
+  member         User?          @relation(fields: [memberId], references: [id])
+}
+
+model Session {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Expense {
+  id             Int       @id @default(autoincrement())
+  name           String
+  chequeNo       String?
+  amountPaise    Int
+  description    String?
+  attachmentPath String?
+  createdAt      DateTime  @default(now())
+  date           DateTime  @default(now())
+}
+
+// Single-row table to hold admin-controlled balance adjustments
+model AdminBalances {
+  id                   Int      @id @default(1)
+  receivedAdjustmentPaise   Int @default(0)
+  expenseAdjustmentPaise    Int @default(0)
+  updatedAt            DateTime @updatedAt
+}
