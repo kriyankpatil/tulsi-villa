@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import ExcelJS from 'exceljs';
 
 type Receipt = {
   id: number;
@@ -90,83 +89,7 @@ export default function AdminPage() {
     setShowExpenseForm(false);
   }
 
-  // Export functions
-  async function exportReceiptsToExcel() {
-    const exportData = receipts.map(r => ({
-      'Name': r.name,
-      'RH Number': r.rhNo,
-      'Amount (₹)': Number(r.amount || 0).toFixed(2),
-      'Description': r.description || '',
-      'Status': r.status,
-      'Date': r.date ? new Date(r.date).toLocaleDateString('en-IN') : '',
-      'Created At': new Date(r.createdAt).toLocaleDateString('en-IN'),
-    }));
-
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Receipts');
-    
-    // Add headers
-    const headers = Object.keys(exportData[0] || {});
-    worksheet.addRow(headers);
-    
-    // Add data
-    exportData.forEach(row => {
-      worksheet.addRow(Object.values(row));
-    });
-    
-    // Auto-size columns
-    worksheet.columns.forEach(column => {
-      column.width = 20;
-    });
-
-    // Generate and download file
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Tulsi_Villa_Receipts_${new Date().toISOString().split('T')[0]}.xlsx`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  }
-
-  async function exportExpensesToExcel() {
-    const exportData = expenses.map(x => ({
-      'Name': x.name,
-      'Amount (₹)': Number(x.amount || 0).toFixed(2),
-      'Description': x.description || '',
-      'Cheque Number': x.chequeNo || '',
-      'Date': x.date ? new Date(x.date).toLocaleDateString('en-IN') : '',
-      'Created At': new Date(x.createdAt).toLocaleDateString('en-IN'),
-    }));
-
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Expenses');
-    
-    // Add headers
-    const headers = Object.keys(exportData[0] || {});
-    worksheet.addRow(headers);
-    
-    // Add data
-    exportData.forEach(row => {
-      worksheet.addRow(Object.values(row));
-    });
-    
-    // Auto-size columns
-    worksheet.columns.forEach(column => {
-      column.width = 20;
-    });
-
-    // Generate and download file
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Tulsi_Villa_Expenses_${new Date().toISOString().split('T')[0]}.xlsx`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  }
+  // Export functions removed per request
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
@@ -357,7 +280,7 @@ export default function AdminPage() {
       <div className="bg-white rounded-2xl shadow-xl border border-slate-200/60 p-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-slate-900">Receipt History</h2>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center">
             <div className="relative">
               <input
                 value={filterRh}
@@ -369,15 +292,6 @@ export default function AdminPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-            <button
-              onClick={exportReceiptsToExcel}
-              className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              Export to Excel
-            </button>
           </div>
         </div>
         <div className="space-y-4">
@@ -542,15 +456,6 @@ export default function AdminPage() {
       <div className="bg-white rounded-2xl shadow-xl border border-slate-200/60 p-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-slate-900">All Expenses</h2>
-          <button
-            onClick={exportExpensesToExcel}
-            className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Export to Excel
-          </button>
         </div>
         <div className="space-y-4">
           {expenses.map((x) => (
