@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Nav from "@/components/Nav";
+import Image from "next/image";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,9 +42,11 @@ export default function RootLayout({
             <div className="flex items-center justify-between h-16">
               <a href="/member" className="flex items-center space-x-3">
                 <div className="w-10 h-10 flex items-center justify-center">
-                  <img 
+                  <Image 
                     src="/images/tulsi-villa-logo.jpg" 
                     alt="Tulsi Villa Residency" 
+                    width={40}
+                    height={40}
                     className="w-full h-full object-contain"
                   />
                 </div>

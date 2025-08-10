@@ -20,11 +20,22 @@ type Balances = {
   adjustments: { received: number; expense: number };
 };
 
+type Expense = {
+  id: number;
+  name: string;
+  amount: string | number;
+  description?: string | null;
+  chequeNo?: string | null;
+  date?: string | null;
+  createdAt: string;
+  attachmentPath?: string | null;
+};
+
 export default function MemberPage() {
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [balances, setBalances] = useState<Balances | null>(null);
-  const [expenses, setExpenses] = useState<Array<any>>([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [receipts, setReceipts] = useState<Receipt[]>([]);
 
   useEffect(() => {
@@ -42,8 +53,8 @@ export default function MemberPage() {
       }
 
       const [b, e, r] = await Promise.all([
-        safeJson<Balances>(fetch("/api/balances"), null as any),
-        safeJson<any[]>(fetch("/api/expenses"), []),
+        safeJson<Balances | null>(fetch("/api/balances"), null),
+        safeJson<Expense[]>(fetch("/api/expenses"), []),
         safeJson<Receipt[]>(fetch("/api/receipts"), []),
       ]);
       setBalances(b);
@@ -234,7 +245,7 @@ export default function MemberPage() {
       <div className="bg-white rounded-2xl shadow-lg border border-slate-200/60 p-8">
         <h2 className="text-2xl font-bold text-slate-900 mb-6">Expense Log</h2>
         <div className="space-y-4">
-          {expenses.map((x: any) => (
+          {expenses.map((x: Expense) => (
             <div key={x.id} className="bg-slate-50 rounded-xl p-4 border border-slate-200/60 hover:shadow-md transition-all duration-200">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
@@ -289,7 +300,7 @@ export default function MemberPage() {
                   <div className="flex items-center gap-3 mb-2">
                     <div className="font-semibold text-slate-900 text-lg">{r.name}</div>
                     <div className="text-sm text-slate-500">({r.rhNo})</div>
-                    <div className="text-2xl font-bold text-green-600">₹{Number(r.amount as any).toFixed(2)}</div>
+                    <div className="text-2xl font-bold text-green-600">₹{Number(r.amount).toFixed(2)}</div>
                   </div>
                   {r.date && (
                     <div className="text-sm text-slate-500 mb-2">

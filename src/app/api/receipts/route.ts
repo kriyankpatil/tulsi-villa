@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { saveUploadedFile } from "@/lib/upload";
 import { getCurrentUser } from "@/lib/auth";
+import { Prisma } from "@prisma/client";
 
 export async function GET() {
   const user = await getCurrentUser();
-  let where: any = {};
+  let where: Prisma.ReceiptWhereInput = {};
   if (user?.role === "MEMBER") {
     where = {
       OR: [

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -34,9 +35,11 @@ export default function SignInPage() {
           <div className="relative z-10">
             <div className="text-center mb-8">
               <div className="w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                <img 
+                <Image 
                   src="/images/tulsi-villa-logo.jpg" 
                   alt="Tulsi Villa Residency" 
+                  width={80}
+                  height={80}
                   className="w-full h-full object-contain"
                 />
               </div>
