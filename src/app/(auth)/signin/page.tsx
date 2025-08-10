@@ -18,11 +18,15 @@ export default function SignInPage() {
       body: JSON.stringify({ name, password }),
     });
     if (!res.ok) {
-      const data = await res.json();
-      setError(data.error || "Sign in failed");
+      const text = await res.text();
+      let msg = "Sign in failed";
+      try { msg = (JSON.parse(text)?.error as string) || msg; } catch {}
+      setError(msg);
       return;
     }
-    const me = await fetch("/api/auth/me").then((r) => r.json());
+    const meRes = await fetch("/api/auth/me");
+    const meText = await meRes.text();
+    const me = meText ? JSON.parse(meText) : null;
     router.push(me?.role === "ADMIN" ? "/admin" : "/member");
   }
 

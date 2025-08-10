@@ -21,7 +21,7 @@ export async function createSession(userId: number): Promise<{ token: string; ex
   // Best-effort set via headers API (works in server actions). Route handlers will also set on response.
   try {
     const cookieStore = await cookies();
-    cookieStore.set(SESSION_COOKIE, token, { httpOnly: true, sameSite: "lax", expires: expiresAt, path: "/", secure: true });
+    cookieStore.set(SESSION_COOKIE, token, { httpOnly: true, sameSite: "lax", expires: expiresAt, path: "/", secure: process.env.NODE_ENV === "production" });
   } catch {
     // ignore if not available in this context
   }

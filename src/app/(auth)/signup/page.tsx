@@ -19,8 +19,10 @@ export default function SignUpPage() {
       body: JSON.stringify({ name, rhNo, password }),
     });
     if (!res.ok) {
-      const data = await res.json();
-      setError(data.error || "Sign up failed");
+      const text = await res.text();
+      let msg = "Sign up failed";
+      try { msg = (JSON.parse(text)?.error as string) || msg; } catch {}
+      setError(msg);
       return;
     }
     router.push("/member");
