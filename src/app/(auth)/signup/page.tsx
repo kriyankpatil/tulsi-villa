@@ -33,8 +33,12 @@ export default function SignUpPage() {
           <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-blue-50/50 opacity-50"></div>
           <div className="relative z-10">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                <span className="text-white font-bold text-2xl">TV</span>
+              <div className="w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                <img 
+                  src="/images/tulsi-villa-logo.svg" 
+                  alt="Tulsi Villa Residency" 
+                  className="w-full h-full object-contain"
+                />
               </div>
               <h1 className="text-3xl font-bold text-slate-900 mb-2">Join Tulsi Villa</h1>
               <p className="text-slate-600">Create your account to get started</p>

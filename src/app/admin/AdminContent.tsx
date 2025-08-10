@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 type Receipt = {
   id: number;
@@ -16,7 +16,16 @@ type Receipt = {
 
 export default function AdminPage() {
   const [receipts, setReceipts] = useState<Receipt[]>([]);
-  const [expenses, setExpenses] = useState<any[]>([]);
+  const [expenses, setExpenses] = useState<{
+    id: number;
+    name: string;
+    amount: string;
+    description?: string | null;
+    chequeNo?: string | null;
+    date?: string | null;
+    createdAt: string;
+    attachmentPath?: string | null;
+  }[]>([]);
   const [balances, setBalances] = useState<{
     received: number;
     expense: number;
@@ -57,7 +66,7 @@ export default function AdminPage() {
   async function saveBalanceEdits() {
     const approvedReceivedBase = receipts
       .filter((r) => r.status === "APPROVED")
-      .reduce((sum, r) => sum + Number((r as any).amount || 0), 0);
+      .reduce((sum, r) => sum + Number(r.amount || 0), 0);
     const expensesBase = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
     const targetReceived = Number(editedReceived || 0);
@@ -82,37 +91,46 @@ export default function AdminPage() {
   }
 
   // Export functions
-  function exportReceiptsToExcel() {
+  async function exportReceiptsToExcel() {
     const exportData = receipts.map(r => ({
       'Name': r.name,
       'RH Number': r.rhNo,
-      'Amount (₹)': Number((r as any).amount || 0).toFixed(2),
+      'Amount (₹)': Number(r.amount || 0).toFixed(2),
       'Description': r.description || '',
       'Status': r.status,
       'Date': r.date ? new Date(r.date).toLocaleDateString('en-IN') : '',
       'Created At': new Date(r.createdAt).toLocaleDateString('en-IN'),
     }));
 
-    const ws = XLSX.utils.json_to_sheet(exportData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Receipts');
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Receipts');
+    
+    // Add headers
+    const headers = Object.keys(exportData[0] || {});
+    worksheet.addRow(headers);
+    
+    // Add data
+    exportData.forEach(row => {
+      worksheet.addRow(Object.values(row));
+    });
     
     // Auto-size columns
-    const colWidths = [
-      { wch: 20 }, // Name
-      { wch: 15 }, // RH Number
-      { wch: 15 }, // Amount
-      { wch: 30 }, // Description
-      { wch: 12 }, // Status
-      { wch: 15 }, // Date
-      { wch: 15 }, // Created At
-    ];
-    ws['!cols'] = colWidths;
+    worksheet.columns.forEach(column => {
+      column.width = 20;
+    });
 
-    XLSX.writeFile(wb, `Tulsi_Villa_Receipts_${new Date().toISOString().split('T')[0]}.xlsx`);
+    // Generate and download file
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Tulsi_Villa_Receipts_${new Date().toISOString().split('T')[0]}.xlsx`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   }
 
-  function exportExpensesToExcel() {
+  async function exportExpensesToExcel() {
     const exportData = expenses.map(x => ({
       'Name': x.name,
       'Amount (₹)': Number(x.amount || 0).toFixed(2),
@@ -122,22 +140,32 @@ export default function AdminPage() {
       'Created At': new Date(x.createdAt).toLocaleDateString('en-IN'),
     }));
 
-    const ws = XLSX.utils.json_to_sheet(exportData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Expenses');
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Expenses');
+    
+    // Add headers
+    const headers = Object.keys(exportData[0] || {});
+    worksheet.addRow(headers);
+    
+    // Add data
+    exportData.forEach(row => {
+      worksheet.addRow(Object.values(row));
+    });
     
     // Auto-size columns
-    const colWidths = [
-      { wch: 25 }, // Name
-      { wch: 15 }, // Amount
-      { wch: 35 }, // Description
-      { wch: 15 }, // Cheque Number
-      { wch: 15 }, // Date
-      { wch: 15 }, // Created At
-    ];
-    ws['!cols'] = colWidths;
+    worksheet.columns.forEach(column => {
+      column.width = 20;
+    });
 
-    XLSX.writeFile(wb, `Tulsi_Villa_Expenses_${new Date().toISOString().split('T')[0]}.xlsx`);
+    // Generate and download file
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Tulsi_Villa_Expenses_${new Date().toISOString().split('T')[0]}.xlsx`;
+    a.click();
+    window.URL.revokeObjectURL(url);
   }
 
   return (
@@ -267,7 +295,7 @@ export default function AdminPage() {
                     <div className="flex items-center gap-3 mb-3">
                       <div className="font-semibold text-slate-900 text-lg">{r.name}</div>
                       <div className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full">RH: {r.rhNo}</div>
-                      <div className="text-2xl font-bold text-green-600">₹{Number(r.amount as any).toFixed(2)}</div>
+                      <div className="text-2xl font-bold text-green-600">₹{Number(r.amount).toFixed(2)}</div>
                     </div>
                     {r.date && (
                       <div className="text-sm text-slate-500 mb-2">
@@ -362,7 +390,7 @@ export default function AdminPage() {
                     <div className="flex items-center gap-3 mb-2">
                       <div className="font-semibold text-slate-900 text-lg">{r.name}</div>
                       <div className="text-sm text-slate-500 bg-slate-100 px-3 py-1 rounded-full">RH: {r.rhNo}</div>
-                      <div className="text-2xl font-bold text-green-600">₹{Number((r as any).amount).toFixed(2)}</div>
+                      <div className="text-2xl font-bold text-green-600">₹{Number(r.amount).toFixed(2)}</div>
                     </div>
                     {r.date && (
                       <div className="text-sm text-slate-500 mb-2">

@@ -39,9 +39,13 @@ export default function RootLayout({
         <header className="bg-white/90 backdrop-blur-md border-b border-slate-200/60 shadow-lg sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-              <a href="/member" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold text-sm">TV</span>
+              <a href="/member" className="flex items-center space-x-3">
+                <div className="w-10 h-10 flex items-center justify-center">
+                  <img 
+                    src="/images/tulsi-villa-logo.jpg" 
+                    alt="Tulsi Villa Residency" 
+                    className="w-full h-full object-contain"
+                  />
                 </div>
                 <span className="font-semibold text-3xl text-slate-900">Tulsi Villa</span>
               </a>
