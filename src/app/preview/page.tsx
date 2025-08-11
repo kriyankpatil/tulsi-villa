@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { createSignedStorageUrl } from "@/lib/supabase";
 
 type PreviewPageProps = {
   searchParams: Promise<{ src?: string }>;
@@ -9,7 +10,15 @@ export default async function PreviewPage(props: PreviewPageProps) {
   const { src } = await props.searchParams;
   const safeSrc = src || "";
 
-  const lower = safeSrc.toLowerCase();
+  let renderUrl = safeSrc;
+  // If the src points to Supabase storage object path ("/bucket/path"), generate a signed URL
+  if (safeSrc.startsWith("/") && !safeSrc.startsWith("/uploads/")) {
+    const maybePath = safeSrc.replace(/^\//, "");
+    const signed = await createSignedStorageUrl(maybePath, 300);
+    if (signed) renderUrl = signed;
+  }
+
+  const lower = renderUrl.toLowerCase();
   const isImage = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".svg"].some((ext) => lower.endsWith(ext));
   const isPdf = lower.endsWith(".pdf");
 
@@ -21,13 +30,13 @@ export default async function PreviewPage(props: PreviewPageProps) {
       {!safeSrc ? (
         <div className="text-red-600">No file to preview.</div>
       ) : isImage ? (
-        <Image src={safeSrc} alt="Attachment preview" className="max-w-5xl w-full h-auto rounded border" width={800} height={600} />
+        <Image src={renderUrl} alt="Attachment preview" className="max-w-5xl w-full h-auto rounded border" width={800} height={600} />
       ) : isPdf ? (
-        <iframe src={safeSrc} className="w-full max-w-5xl h-[80vh] rounded border" />
+        <iframe src={renderUrl} className="w-full max-w-5xl h-[80vh] rounded border" />
       ) : (
         <div className="w-full max-w-5xl">
           <div className="mb-2">Preview not supported for this file type.</div>
-          <a href={safeSrc} target="_blank" rel="noreferrer" className="text-blue-600 underline">Open file</a>
+          <a href={renderUrl} target="_blank" rel="noreferrer" className="text-blue-600 underline">Open file</a>
         </div>
       )}
     </div>

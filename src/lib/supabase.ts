@@ -13,4 +13,13 @@ export function getSupabaseAdminClient(): SupabaseClient | null {
   return cachedAdminClient;
 }
 
+export async function createSignedStorageUrl(objectPath: string, expiresInSeconds = 300): Promise<string | null> {
+  const bucket = process.env.SUPABASE_STORAGE_BUCKET || "uploads";
+  const supabase = getSupabaseAdminClient();
+  if (!supabase) return null;
+  const { data, error } = await supabase.storage.from(bucket).createSignedUrl(objectPath, expiresInSeconds);
+  if (error) return null;
+  return data?.signedUrl ?? null;
+}
+
 

@@ -30,9 +30,9 @@ export async function saveUploadedFile(
     });
     if (error) throw error;
 
-    // Build public URL (assumes bucket is public; otherwise, generate signed URL when rendering)
-    const publicUrl = `${process.env.SUPABASE_URL}/storage/v1/object/public/${bucket}/${objectPath}`;
-    return { relativePath: publicUrl, absolutePath: publicUrl, originalName: file.name };
+    // Store the object path; consumers will request a signed URL when rendering
+    const storedPath = `/${bucket}/${objectPath}`;
+    return { relativePath: storedPath, absolutePath: storedPath, originalName: file.name };
   }
 
   // Fallback to local disk (useful in development or non-serverless hosts)
