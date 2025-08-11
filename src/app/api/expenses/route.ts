@@ -3,9 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { saveUploadedFile } from "@/lib/upload";
 
 export async function GET() {
-  const [expenses] = await prisma.$transaction([
-    prisma.expense.findMany({ orderBy: { createdAt: "desc" } }),
-  ]);
+  const expenses = await prisma.expense.findMany({ orderBy: { createdAt: "desc" } });
   const shaped = expenses.map((e) => ({ ...e, amount: e.amountPaise / 100 }));
   return NextResponse.json(shaped);
 }

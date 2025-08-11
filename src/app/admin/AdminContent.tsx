@@ -38,13 +38,11 @@ export default function AdminPage() {
   const [showExpenseForm, setShowExpenseForm] = useState(false);
 
   async function loadAll() {
-    const [r, e, b] = await Promise.all([
-      fetch("/api/receipts").then((r) => r.json()),
-      fetch("/api/expenses").then((r) => r.json()),
-      fetch("/api/balances").then((r) => r.json()),
-    ]);
+    const r = await fetch("/api/receipts").then((res) => res.json());
     setReceipts(r);
+    const e = await fetch("/api/expenses").then((res) => res.json());
     setExpenses(e);
+    const b = await fetch("/api/balances").then((res) => res.json());
     setBalances(b);
     setEditedReceived(String(b?.received ?? 0));
     setEditedExpense(String(b?.expense ?? 0));

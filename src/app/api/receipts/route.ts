@@ -15,9 +15,7 @@ export async function GET() {
       ],
     };
   }
-  const [receipts] = await prisma.$transaction([
-    prisma.receipt.findMany({ where, orderBy: { createdAt: "desc" } }),
-  ]);
+  const receipts = await prisma.receipt.findMany({ where, orderBy: { createdAt: "desc" } });
   const shaped = receipts.map((r) => ({ ...r, amount: r.amountPaise / 100 }));
   return NextResponse.json(shaped);
 }

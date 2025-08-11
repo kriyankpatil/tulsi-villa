@@ -52,13 +52,11 @@ export default function MemberPage() {
         }
       }
 
-      const [b, e, r] = await Promise.all([
-        safeJson<Balances | null>(fetch("/api/balances"), null),
-        safeJson<Expense[]>(fetch("/api/expenses"), []),
-        safeJson<Receipt[]>(fetch("/api/receipts"), []),
-      ]);
+      const b = await safeJson<Balances | null>(fetch("/api/balances"), null);
       setBalances(b);
+      const e = await safeJson<Expense[]>(fetch("/api/expenses"), []);
       setExpenses(e);
+      const r = await safeJson<Receipt[]>(fetch("/api/receipts"), []);
       setReceipts(r);
     };
     load();
