@@ -2,22 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 async function ensureRow() {
-  const existing = await prisma.adminBalances.findFirst();
-  if (!existing) {
-    await prisma.adminBalances.create({ data: { id: 1 } });
-  }
+  await prisma.$transaction(async (tx) => {
+    const existing = await tx.adminBalances.findFirst();
+    if (!existing) {
+      await tx.adminBalances.create({ data: { id: 1 } });
+    }
+  });
 }
 
 export async function GET() {
   await ensureRow();
-  const balances = await prisma.adminBalances.findFirst();
-
-  // compute live calculated totals
-  const approvedReceipts = await prisma.receipt.aggregate({
-    where: { status: "APPROVED" },
-    _sum: { amountPaise: true },
-  });
-  const expenses = await prisma.expense.aggregate({ _sum: { amountPaise: true } });
+  const [balances, approvedReceipts, expenses] = await prisma.$transaction([
+    prisma.adminBalances.findFirst(),
+    prisma.receipt.aggregate({ where: { status: "APPROVED" }, _sum: { amountPaise: true } }),
+    prisma.expense.aggregate({ _sum: { amountPaise: true } }),
+  ]);
 
   const receivedPaise = Number(approvedReceipts._sum.amountPaise ?? 0) + Number(balances?.receivedAdjustmentPaise ?? 0);
   const expensePaise = Number(expenses._sum.amountPaise ?? 0) + Number(balances?.expenseAdjustmentPaise ?? 0);
