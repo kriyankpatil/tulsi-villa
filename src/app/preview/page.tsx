@@ -1,11 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { headers } from "next/headers";
-import type { PageProps } from "next";
 import { createSignedStorageUrl } from "@/lib/supabase";
 
-export default async function PreviewPage({ searchParams }: PageProps<{ src?: string; from?: string }>) {
-  const { src, from } = await searchParams;
+export default async function PreviewPage(props: { searchParams: Promise<{ src?: string; from?: string }> }) {
+  const { src, from } = await props.searchParams;
   const safeSrc = src || "";
   const safeFrom = (from || "").toLowerCase();
 
@@ -22,7 +21,7 @@ export default async function PreviewPage({ searchParams }: PageProps<{ src?: st
   const isImage = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".svg"].some((ext) => lower.endsWith(ext));
   const isPdf = lower.endsWith(".pdf");
 
-  const hdrs = await headers();
+  const hdrs = headers();
   const referer = (hdrs.get("referer") || "").toLowerCase();
   const backHref = safeFrom === "admin" || referer.includes("/admin")
     ? "/admin"
