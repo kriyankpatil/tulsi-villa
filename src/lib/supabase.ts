@@ -22,4 +22,23 @@ export async function createSignedStorageUrl(objectPath: string, expiresInSecond
   return data?.signedUrl ?? null;
 }
 
+/**
+ * Ensures the provided Supabase Storage bucket exists.
+ * Uses the service role to create the bucket if it has not been created yet.
+ * Safe to call multiple times; a 409 (already exists) is ignored.
+ */
+export async function ensureStorageBucketExists(bucketName: string): Promise<void> {
+  const supabase = getSupabaseAdminClient();
+  if (!supabase) return;
+  const { error } = await supabase.storage.createBucket(bucketName, { public: false });
+  if (error) {
+    type SupabaseErrorLike = { statusCode?: number; status?: number; message?: string };
+    const e = error as SupabaseErrorLike;
+    const statusCode = e.statusCode ?? e.status;
+    const message = e.message ?? "";
+    const isAlreadyExists = statusCode === 409 || /exists/i.test(message);
+    if (!isAlreadyExists) throw error;
+  }
+}
+
 
