@@ -1,14 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { headers } from "next/headers";
+import type { PageProps } from "next";
 import { createSignedStorageUrl } from "@/lib/supabase";
 
-type PreviewPageProps = {
-  searchParams: { src?: string; from?: string };
-};
-
-export default async function PreviewPage(props: PreviewPageProps) {
-  const { src, from } = props.searchParams;
+export default async function PreviewPage({ searchParams }: PageProps<{ src?: string; from?: string }>) {
+  const { src, from } = await searchParams;
   const safeSrc = src || "";
   const safeFrom = (from || "").toLowerCase();
 
