@@ -17,9 +17,9 @@ export default async function PreviewPage(props: { searchParams: Promise<{ src?:
     if (signed) renderUrl = signed;
   }
 
-  const lower = renderUrl.toLowerCase();
-  const isImage = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".svg"].some((ext) => lower.endsWith(ext));
-  const isPdf = lower.endsWith(".pdf");
+  const lowerPath = renderUrl.split("?")[0].toLowerCase();
+  const isImage = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".svg"].some((ext) => lowerPath.endsWith(ext));
+  const isPdf = lowerPath.endsWith(".pdf");
 
   const hdrs = await headers();
   const referer = (hdrs.get("referer") || "").toLowerCase();
