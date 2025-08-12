@@ -1,6 +1,7 @@
 import { createWriteStream, existsSync, mkdirSync } from "fs";
+import { promises as fsp } from "fs";
 import { join } from "path";
-import { getSupabaseAdminClient } from "@/lib/supabase";
+import { ensureStorageBucketExists, getSupabaseAdminClient } from "@/lib/supabase";
 
 export type SavedFileInfo = {
   relativePath: string;
@@ -22,7 +23,9 @@ export async function saveUploadedFile(
   if (useSupabase) {
     const supabase = getSupabaseAdminClient();
     if (!supabase) return null;
-    const bucket = process.env.SUPABASE_STORAGE_BUCKET || "uploads";
+    const bucket = (process.env.SUPABASE_STORAGE_BUCKET || "uploads").trim();
+    // Best-effort ensure the bucket exists in production
+    await ensureStorageBucketExists(bucket);
     const objectPath = `${options.subdirectory}/${fileNameSafe}`;
     const { error } = await supabase.storage.from(bucket).upload(objectPath, buffer, {
       contentType: file.type || "application/octet-stream",
@@ -58,6 +61,25 @@ export async function saveUploadedFile(
 
   const relativePath = `/uploads/${options.subdirectory}/${fileNameSafe}`;
   return { relativePath, absolutePath, originalName: file.name };
+}
+
+export async function deleteStoredFile(storedPath: string | null | undefined): Promise<void> {
+  if (!storedPath) return;
+  // If using Supabase in production, delete from storage bucket
+  const isSupabaseConfigured = !!process.env.SUPABASE_URL && !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (isSupabaseConfigured && storedPath.startsWith("/")) {
+    const supabase = getSupabaseAdminClient();
+    if (!supabase) return;
+    const noLeading = storedPath.replace(/^\//, "");
+    const [bucket, ...rest] = noLeading.split("/");
+    const objectPath = rest.join("/");
+    if (!bucket || !objectPath) return;
+    await supabase.storage.from(bucket).remove([objectPath]);
+    return;
+  }
+  // Fallback: delete local file if present
+  const absolute = join(process.cwd(), "public", storedPath.replace(/^\//, ""));
+  try { await fsp.unlink(absolute); } catch { /* ignore */ }
 }
 
 
