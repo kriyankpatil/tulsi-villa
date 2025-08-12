@@ -12,8 +12,12 @@ export default async function PreviewPage(props: { searchParams: Promise<{ src?:
   // If the src looks like a Supabase Storage object path ("/bucket/path"),
   // generate a signed URL when Supabase is configured.
   if (safeSrc.startsWith("/") && process.env.SUPABASE_URL) {
-    const maybePath = safeSrc.replace(/^\//, "");
-    const signed = await createSignedStorageUrl(maybePath, 300);
+    const bucket = (process.env.SUPABASE_STORAGE_BUCKET || "uploads").trim();
+    const noLeading = safeSrc.replace(/^\//, ""); // e.g. "uploads/receipts/abc.jpg"
+    const objectPath = noLeading.startsWith(`${bucket}/`)
+      ? noLeading.slice(bucket.length + 1) // strip "bucket/"
+      : noLeading;
+    const signed = await createSignedStorageUrl(objectPath, 300);
     if (signed) renderUrl = signed;
   }
 
