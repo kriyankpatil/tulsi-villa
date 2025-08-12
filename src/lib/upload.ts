@@ -23,7 +23,9 @@ export async function saveUploadedFile(
   if (useSupabase) {
     const supabase = getSupabaseAdminClient();
     if (!supabase) return null;
-    const bucket = (process.env.SUPABASE_STORAGE_BUCKET || "uploads").trim();
+    const rawBucket = (process.env.SUPABASE_STORAGE_BUCKET || "uploads").trim();
+    const bucketNameIsValid = /^[a-z0-9][a-z0-9-_]{1,62}$/i.test(rawBucket);
+    const bucket = bucketNameIsValid ? rawBucket : "uploads";
     // Best-effort ensure the bucket exists in production
     await ensureStorageBucketExists(bucket);
     const objectPath = `${options.subdirectory}/${fileNameSafe}`;
