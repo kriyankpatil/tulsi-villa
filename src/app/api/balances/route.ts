@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 async function ensureRow() {
   const existing = await prisma.adminBalances.findFirst();
@@ -31,7 +33,7 @@ export async function GET() {
       received: Number(balances?.receivedAdjustmentPaise ?? 0) / 100,
       expense: Number(balances?.expenseAdjustmentPaise ?? 0) / 100,
     },
-  });
+  }, { headers: { "Cache-Control": "no-store" } });
 }
 
 export async function POST(req: NextRequest) {

@@ -2,10 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { saveUploadedFile } from "@/lib/upload";
 
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export async function GET() {
   const expenses = await prisma.expense.findMany({ orderBy: { createdAt: "desc" } });
   const shaped = expenses.map((e) => ({ ...e, amount: e.amountPaise / 100 }));
-  return NextResponse.json(shaped);
+  return NextResponse.json(shaped, { headers: { "Cache-Control": "no-store" } });
 }
 
 export async function POST(req: NextRequest) {

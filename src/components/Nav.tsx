@@ -25,15 +25,15 @@ export default function Nav() {
   }
 
   if (isAdminSignin) {
-    return <nav className="flex gap-3 text-sm items-center" />;
+    return <nav className="flex gap-2 sm:gap-3 text-xs sm:text-sm items-center" />;
   }
 
   return (
-    <nav className="flex gap-4 text-sm items-center">
+    <nav className="flex gap-2 sm:gap-3 lg:gap-4 text-xs sm:text-sm items-center">
       {me ? (
         <button 
           onClick={signOut} 
-          className="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+          className="px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition-all duration-200 font-medium shadow-sm hover:shadow-md text-xs sm:text-sm"
         >
           Sign out
         </button>
@@ -41,20 +41,20 @@ export default function Nav() {
         <>
           <Link 
             href="/signin" 
-            className="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 font-medium"
+            className="px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all duration-200 font-medium text-xs sm:text-sm"
           >
             Sign in
           </Link>
           <Link 
             href="/signup" 
-            className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+            className="px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-xs sm:text-sm"
           >
             Sign up
           </Link>
           {!hideAdmin && (
             <Link 
               href="/admin/signin" 
-              className="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+              className="px-2 sm:px-3 lg:px-4 py-1.5 sm:py-2 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition-all duration-200 font-medium shadow-sm hover:shadow-md text-xs sm:text-sm"
             >
               Admin
             </Link>
