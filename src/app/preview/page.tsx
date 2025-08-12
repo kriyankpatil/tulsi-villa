@@ -21,7 +21,7 @@ export default async function PreviewPage(props: { searchParams: Promise<{ src?:
   const isImage = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".svg"].some((ext) => lower.endsWith(ext));
   const isPdf = lower.endsWith(".pdf");
 
-  const hdrs = headers();
+  const hdrs = await headers();
   const referer = (hdrs.get("referer") || "").toLowerCase();
   const backHref = safeFrom === "admin" || referer.includes("/admin")
     ? "/admin"
