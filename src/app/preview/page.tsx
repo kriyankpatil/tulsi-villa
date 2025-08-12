@@ -1,14 +1,16 @@
 import Link from "next/link";
 import Image from "next/image";
+import { headers } from "next/headers";
 import { createSignedStorageUrl } from "@/lib/supabase";
 
 type PreviewPageProps = {
-  searchParams: Promise<{ src?: string }>;
+  searchParams: { src?: string; from?: string };
 };
 
 export default async function PreviewPage(props: PreviewPageProps) {
-  const { src } = await props.searchParams;
+  const { src, from } = props.searchParams;
   const safeSrc = src || "";
+  const safeFrom = (from || "").toLowerCase();
 
   let renderUrl = safeSrc;
   // If the src looks like a Supabase Storage object path ("/bucket/path"),
@@ -23,10 +25,16 @@ export default async function PreviewPage(props: PreviewPageProps) {
   const isImage = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp", ".svg"].some((ext) => lower.endsWith(ext));
   const isPdf = lower.endsWith(".pdf");
 
+  const hdrs = await headers();
+  const referer = (hdrs.get("referer") || "").toLowerCase();
+  const backHref = safeFrom === "admin" || referer.includes("/admin")
+    ? "/admin"
+    : "/member";
+
   return (
     <div className="min-h-screen p-4 md:p-8 flex flex-col gap-4 items-center">
       <div className="w-full max-w-5xl">
-        <Link href="/" className="text-blue-600">← Back</Link>
+        <Link href={backHref} className="text-blue-600">← Back</Link>
       </div>
       {!safeSrc ? (
         <div className="text-red-600">No file to preview.</div>
