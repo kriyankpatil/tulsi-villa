@@ -56,7 +56,7 @@ export default function MemberPage() {
       setBalances(b);
       const e = await safeJson<Expense[]>(fetch("/api/expenses"), []);
       setExpenses(e);
-      const r = await safeJson<Receipt[]>(fetch("/api/receipts"), []);
+      const r = await safeJson<Receipt[]>(fetch("/api/receipts?scope=me"), []);
       setReceipts(r);
     };
     load();
@@ -112,7 +112,7 @@ export default function MemberPage() {
                   name="name" 
                   placeholder="Enter your full name" 
                   required 
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" 
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white text-slate-900 placeholder-slate-500" 
                 />
               </div>
               <div>
@@ -121,7 +121,7 @@ export default function MemberPage() {
                   name="rhNo" 
                   placeholder="Enter RH number" 
                   required 
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" 
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white text-slate-900 placeholder-slate-500" 
                 />
               </div>
               <div>
@@ -133,7 +133,7 @@ export default function MemberPage() {
                   min="0"
                   step="0.01"
                   required
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white text-slate-900 placeholder-slate-500"
                 />
               </div>
               <div>
@@ -141,7 +141,7 @@ export default function MemberPage() {
                 <input 
                   name="date" 
                   type="date" 
-                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200" 
+                  className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white text-slate-900" 
                 />
               </div>
             </div>
@@ -151,7 +151,7 @@ export default function MemberPage() {
                 name="description" 
                 placeholder="Describe the receipt purpose..." 
                 rows={3}
-                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-none" 
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-none bg-white text-slate-900 placeholder-slate-500" 
               />
             </div>
             <div>
@@ -161,7 +161,7 @@ export default function MemberPage() {
                 type="file" 
                 accept="image/*" 
                 required 
-                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white text-slate-900 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
               />
             </div>
             <div className="flex justify-end">

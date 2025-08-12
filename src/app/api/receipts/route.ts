@@ -4,20 +4,28 @@ import { saveUploadedFile } from "@/lib/upload";
 import { getCurrentUser } from "@/lib/auth";
 import { Prisma } from "@prisma/client";
 
-export async function GET() {
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
+export async function GET(req: NextRequest) {
   const user = await getCurrentUser();
+  if (!user) return NextResponse.json([]);
+
+  const scope = req.nextUrl.searchParams.get("scope");
   let where: Prisma.ReceiptWhereInput = {};
-  if (user?.role === "MEMBER") {
-    where = {
-      OR: [
-        { memberId: user.id },
-        ...(user.rhNo ? [{ AND: [{ memberId: null }, { rhNo: user.rhNo }] }] : []),
-      ],
-    };
+  if (scope === "me") {
+    where = { memberId: user.id };
+  } else if (user.role === "MEMBER") {
+    where = { memberId: user.id };
   }
+
   const receipts = await prisma.receipt.findMany({ where, orderBy: { createdAt: "desc" } });
   const shaped = receipts.map((r) => ({ ...r, amount: r.amountPaise / 100 }));
-  return NextResponse.json(shaped);
+  return NextResponse.json(shaped, {
+    headers: {
+      "Cache-Control": "no-store",
+    },
+  });
 }
 
 export async function POST(req: NextRequest) {
