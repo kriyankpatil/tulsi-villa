@@ -24,10 +24,26 @@ export default function SignInPage() {
       setError(msg);
       return;
     }
+    
     const meRes = await fetch("/api/auth/me");
     const meText = await meRes.text();
     const me = meText ? JSON.parse(meText) : null;
-    router.push(me?.role === "ADMIN" ? "/admin" : "/member");
+    
+    // Security check: Prevent admin users from logging in through member signin
+    if (me?.role === "ADMIN") {
+      setError("Admin users must use the admin signin page");
+      // Clear the session since admin shouldn't be here
+      await fetch("/api/auth/signout", { method: "POST" });
+      return;
+    }
+    
+    // Only allow MEMBER role users to proceed
+    if (me?.role === "MEMBER") {
+      router.push("/member");
+    } else {
+      setError("Invalid user role. Please contact administrator.");
+      await fetch("/api/auth/signout", { method: "POST" });
+    }
   }
 
   return (
@@ -109,6 +125,14 @@ export default function SignInPage() {
                   Create an account
                 </a>
               </p>
+              <div className="mt-3 pt-3 border-t border-slate-200">
+                <p className="text-xs text-slate-500">
+                  Admin users:{" "}
+                  <a href="/admin/signin" className="font-semibold text-red-600 hover:text-red-700 transition-colors duration-200">
+                    Use admin signin
+                  </a>
+                </p>
+              </div>
             </div>
           </div>
         </div>

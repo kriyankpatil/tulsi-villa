@@ -26,6 +26,14 @@ export async function POST(req: NextRequest) {
       },
     });
   }
+  
+  // Security check: Ensure the user has ADMIN role
+  if (admin.role !== "ADMIN") {
+    return NextResponse.json({ 
+      error: "Access denied. Admin privileges required." 
+    }, { status: 403 });
+  }
+  
   const { token, expiresAt } = await createSession(admin.id);
   const res = NextResponse.json({ id: admin.id, name: admin.name, email: admin.email, role: admin.role });
   res.cookies.set(SESSION_COOKIE, token, { httpOnly: true, sameSite: "lax", expires: expiresAt, path: "/", secure: true });
