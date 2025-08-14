@@ -125,14 +125,6 @@ export default function SignInPage() {
                   Create an account
                 </a>
               </p>
-              <div className="mt-3 pt-3 border-t border-slate-200">
-                <p className="text-xs text-slate-500">
-                  Admin users:{" "}
-                  <a href="/admin/signin" className="font-semibold text-red-600 hover:text-red-700 transition-colors duration-200">
-                    Use admin signin
-                  </a>
-                </p>
-              </div>
             </div>
           </div>
         </div>
