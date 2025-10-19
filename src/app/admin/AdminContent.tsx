@@ -302,7 +302,7 @@ export default function AdminPage() {
             </div>
           </div>
         </div>
-        <div className="space-y-3 sm:space-y-4">
+        <div className="max-h-96 overflow-y-auto space-y-3 sm:space-y-4 pr-2">
           {receipts
             .filter((r) => (filterRh ? r.rhNo.toLowerCase().includes(filterRh.toLowerCase()) : true))
             .map((r) => (
@@ -465,7 +465,7 @@ export default function AdminPage() {
             <div className="flex items-center justify-between mb-4 sm:mb-6">
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900">All Expenses</h2>
         </div>
-        <div className="h-80 overflow-y-scroll space-y-3 sm:space-y-4 pr-2 scrollable-section" style={{scrollbarWidth: 'thin', scrollbarGutter: 'stable'}}>
+        <div className="max-h-96 overflow-y-auto space-y-3 sm:space-y-4 pr-2">
           {expenses.map((x) => (
             <div key={x.id} className="bg-slate-50 rounded-xl p-3 sm:p-4 border border-slate-200/60 hover:shadow-md transition-all duration-200">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
