@@ -33,10 +33,9 @@
     "typescript": "^5"
   },
   "overrides": {
-    "fetch-blob": "^4.0.0",
-    "node-fetch": "^3.3.2"
+    "node-domexception": "npm:undici@^6.0.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "18.x || 20.x"
   }
 }
