@@ -242,7 +242,7 @@ export default function MemberPage() {
       {/* Expense Log Section */}
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200/60 p-4 sm:p-6 lg:p-8">
         <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4 sm:mb-6">Expense Log</h2>
-        <div className="max-h-96 overflow-y-auto space-y-3 sm:space-y-4 pr-2">
+        <div className="max-h-64 overflow-y-auto space-y-3 sm:space-y-4 pr-2" style={{scrollbarWidth: 'thin'}}>
           {expenses.map((x: Expense) => (
             <div key={x.id} className="bg-slate-50 rounded-xl p-3 sm:p-4 border border-slate-200/60 hover:shadow-md transition-all duration-200">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -290,7 +290,7 @@ export default function MemberPage() {
       {/* Received Log Section */}
       <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200/60 p-4 sm:p-6 lg:p-8">
         <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4 sm:mb-6">Your Receipts</h2>
-        <div className="max-h-96 overflow-y-auto space-y-3 sm:space-y-4 pr-2">
+        <div className="max-h-64 overflow-y-auto space-y-3 sm:space-y-4 pr-2" style={{scrollbarWidth: 'thin'}}>
           {receipts.map((r) => (
             <div key={r.id} className="bg-slate-50 rounded-xl p-3 sm:p-4 border border-slate-200/60 hover:shadow-md transition-all duration-200">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
