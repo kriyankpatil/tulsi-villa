@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import { MemberPageSkeleton } from "@/components/PageSkeleton";
 
 type Receipt = {
   id: number;
@@ -34,12 +36,14 @@ type Expense = {
 export default function MemberPage() {
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [balances, setBalances] = useState<Balances | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [receipts, setReceipts] = useState<Receipt[]>([]);
 
   useEffect(() => {
     const load = async () => {
+      setLoading(true);
       async function safeJson<T>(input: Promise<Response>, fallback: T): Promise<T> {
         try {
           const res = await input;
@@ -52,12 +56,15 @@ export default function MemberPage() {
         }
       }
 
-      const b = await safeJson<Balances | null>(fetch("/api/balances"), null);
+      const [b, e, r] = await Promise.all([
+        safeJson<Balances | null>(fetch("/api/balances"), null),
+        safeJson<Expense[]>(fetch("/api/expenses"), []),
+        safeJson<Receipt[]>(fetch("/api/receipts?scope=me"), []),
+      ]);
       setBalances(b);
-      const e = await safeJson<Expense[]>(fetch("/api/expenses"), []);
       setExpenses(e);
-      const r = await safeJson<Receipt[]>(fetch("/api/receipts?scope=me"), []);
       setReceipts(r);
+      setLoading(false);
     };
     load();
   }, []);
@@ -72,6 +79,10 @@ export default function MemberPage() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  if (loading) {
+    return <MemberPageSkeleton />;
   }
 
   return (
@@ -188,7 +199,7 @@ export default function MemberPage() {
 
       {/* Balances Section */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {balances ? (
+        {balances !== null ? (
           <>
             <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-green-200/60">
               <div className="flex items-center justify-between">
@@ -233,8 +244,8 @@ export default function MemberPage() {
             </div>
           </>
         ) : (
-          <div className="col-span-1 sm:col-span-2 lg:col-span-3 flex justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="col-span-1 sm:col-span-2 lg:col-span-3 flex justify-center py-8">
+            <LoadingSpinner size="lg" />
           </div>
         )}
       </div>

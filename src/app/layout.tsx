@@ -15,8 +15,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tulsi Villa",
-  description: "Member and Admin apps for receipts and expenses",
+  title: { default: "Tulsi Villa", template: "%s | Tulsi Villa" },
+  description: "Tulsi Villa – Manage receipts, expenses, and balances. Member and admin portal.",
+  openGraph: {
+    title: "Tulsi Villa",
+    description: "Manage receipts, expenses, and balances. Member and admin portal.",
+  },
 };
 
 export const viewport: Viewport = {
@@ -47,13 +51,14 @@ export default function RootLayout({
           <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
             <div className="flex items-center justify-between h-14 sm:h-16">
               <a href="/member" className="flex items-center space-x-2 sm:space-x-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center flex-shrink-0">
                   <Image 
                     src="/images/tulsi-villa-logo.jpg" 
                     alt="Tulsi Villa Residency" 
                     width={40}
                     height={40}
                     className="w-full h-full object-contain"
+                    priority
                   />
                 </div>
                 <span className="font-semibold text-xl sm:text-2xl lg:text-3xl text-slate-900">Tulsi Villa</span>

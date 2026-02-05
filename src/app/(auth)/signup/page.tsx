@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -9,23 +10,29 @@ export default function SignUpPage() {
   const [rhNo, setRhNo] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    const res = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, rhNo, password }),
-    });
-    if (!res.ok) {
-      const text = await res.text();
-      let msg = "Sign up failed";
-      try { msg = (JSON.parse(text)?.error as string) || msg; } catch {}
-      setError(msg);
-      return;
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, rhNo, password }),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        let msg = "Sign up failed";
+        try { msg = (JSON.parse(text)?.error as string) || msg; } catch {}
+        setError(msg);
+        return;
+      }
+      router.push("/member");
+    } finally {
+      setLoading(false);
     }
-    router.push("/member");
   }
 
   return (
@@ -109,9 +116,17 @@ export default function SignUpPage() {
               
               <button 
                 type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2.5 sm:py-3 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-sm sm:text-base"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2.5 sm:py-3 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-sm sm:text-base disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
               >
-                Create Account
+                {loading ? (
+                  <>
+                    <LoadingSpinner size="sm" className="border-t-white border-slate-300" />
+                    Creating account...
+                  </>
+                ) : (
+                  "Create Account"
+                )}
               </button>
             </form>
             

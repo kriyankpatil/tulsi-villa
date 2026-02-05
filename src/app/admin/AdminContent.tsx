@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import { AdminPageSkeleton } from "@/components/PageSkeleton";
 
 type Receipt = {
   id: number;
@@ -36,58 +38,118 @@ export default function AdminPage() {
   const [editedExpense, setEditedExpense] = useState<string>("0");
   const [filterRh, setFilterRh] = useState("");
   const [showExpenseForm, setShowExpenseForm] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
+  const [savingBalances, setSavingBalances] = useState(false);
+  const [submittingExpense, setSubmittingExpense] = useState(false);
 
   async function loadAll() {
-    const r = await fetch("/api/receipts").then((res) => res.json());
-    setReceipts(r);
-    const e = await fetch("/api/expenses").then((res) => res.json());
-    setExpenses(e);
-    const b = await fetch("/api/balances").then((res) => res.json());
-    setBalances(b);
-    setEditedReceived(String(b?.received ?? 0));
-    setEditedExpense(String(b?.expense ?? 0));
+    setLoading(true);
+    try {
+      const [rRes, eRes, bRes] = await Promise.all([
+        fetch("/api/receipts"),
+        fetch("/api/expenses"),
+        fetch("/api/balances"),
+      ]);
+      const [r, e, b] = await Promise.all([
+        rRes.json(),
+        eRes.json(),
+        bRes.json(),
+      ]);
+      setReceipts(r);
+      setExpenses(e);
+      setBalances(b);
+      setEditedReceived(String(b?.received ?? 0));
+      setEditedExpense(String(b?.expense ?? 0));
+    } finally {
+      setLoading(false);
+    }
   }
   useEffect(() => {
     loadAll();
   }, []);
 
   async function approve(id: number) {
-    await fetch(`/api/receipts/${id}/approve`, { method: "POST" });
-    await loadAll();
+    setActionLoadingId(id);
+    try {
+      await fetch(`/api/receipts/${id}/approve`, { method: "POST" });
+      await loadAll();
+    } finally {
+      setActionLoadingId(null);
+    }
   }
   async function reject(id: number) {
-    await fetch(`/api/receipts/${id}/reject`, { method: "POST" });
-    await loadAll();
+    setActionLoadingId(id);
+    try {
+      await fetch(`/api/receipts/${id}/reject`, { method: "POST" });
+      await loadAll();
+    } finally {
+      setActionLoadingId(null);
+    }
   }
 
   async function saveBalanceEdits() {
-    const approvedReceivedBase = receipts
-      .filter((r) => r.status === "APPROVED")
-      .reduce((sum, r) => sum + Number(r.amount || 0), 0);
-    const expensesBase = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+    setSavingBalances(true);
+    try {
+      const approvedReceivedBase = receipts
+        .filter((r) => r.status === "APPROVED")
+        .reduce((sum, r) => sum + Number(r.amount || 0), 0);
+      const expensesBase = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
-    const targetReceived = Number(editedReceived || 0);
-    const targetExpense = Number(editedExpense || 0);
+      const targetReceived = Number(editedReceived || 0);
+      const targetExpense = Number(editedExpense || 0);
 
-    const receivedAdjustment = targetReceived - approvedReceivedBase;
-    const expenseAdjustment = targetExpense - expensesBase;
+      const receivedAdjustment = targetReceived - approvedReceivedBase;
+      const expenseAdjustment = targetExpense - expensesBase;
 
-    await fetch("/api/balances", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ receivedAdjustment, expenseAdjustment }),
-    });
-    setIsEditingBalances(false);
-    await loadAll();
+      await fetch("/api/balances", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ receivedAdjustment, expenseAdjustment }),
+      });
+      setIsEditingBalances(false);
+      await loadAll();
+    } finally {
+      setSavingBalances(false);
+    }
   }
 
   async function submitExpense(fd: FormData) {
-    await fetch("/api/expenses", { method: "POST", body: fd });
-    await loadAll();
-    setShowExpenseForm(false);
+    setSubmittingExpense(true);
+    try {
+      await fetch("/api/expenses", { method: "POST", body: fd });
+      await loadAll();
+      setShowExpenseForm(false);
+    } finally {
+      setSubmittingExpense(false);
+    }
   }
 
-  // Export functions removed per request
+  async function deleteReceipt(id: number) {
+    if (!confirm("Delete this receipt? This cannot be undone.")) return;
+    setActionLoadingId(id);
+    try {
+      await fetch(`/api/receipts/${id}`, { method: "DELETE" });
+      await loadAll();
+    } finally {
+      setActionLoadingId(null);
+    }
+  }
+
+  async function deleteExpense(id: number) {
+    if (!confirm("Delete this expense? This cannot be undone.")) return;
+    setActionLoadingId(id);
+    try {
+      await fetch(`/api/expenses/${id}`, { method: "DELETE" });
+      await loadAll();
+    } finally {
+      setActionLoadingId(null);
+    }
+  }
+
+  if (loading) {
+    return <AdminPageSkeleton />;
+  }
 
   return (
     <div className="max-w-7xl mx-auto p-3 sm:p-4 lg:p-6 space-y-6 sm:space-y-8">
@@ -111,10 +173,18 @@ export default function AdminPage() {
           ) : (
             <div className="flex flex-col sm:flex-row gap-3">
               <button 
-                className="px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base"
+                disabled={savingBalances}
+                className="px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
                 onClick={saveBalanceEdits}
               >
-                Save Changes
+                {savingBalances ? (
+                  <span className="flex items-center gap-2">
+                    <LoadingSpinner size="sm" className="border-t-white border-slate-300" />
+                    Saving...
+                  </span>
+                ) : (
+                  "Save Changes"
+                )}
               </button>
               <button 
                 className="px-4 sm:px-6 py-2.5 sm:py-3 bg-slate-100 text-slate-700 rounded-xl font-semibold hover:bg-slate-200 transition-all duration-200 text-sm sm:text-base"
@@ -198,7 +268,7 @@ export default function AdminPage() {
           </div>
         ) : (
           <div className="flex justify-center py-8 sm:py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <LoadingSpinner size="lg" />
           </div>
         )}
       </div>
@@ -245,25 +315,27 @@ export default function AdminPage() {
                   </div>
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 lg:ml-6">
                     <button 
-                      className="px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base"
+                      disabled={actionLoadingId === r.id}
+                      className="px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
                       onClick={() => approve(r.id)}
                     >
+                      {actionLoadingId === r.id ? <LoadingSpinner size="sm" className="border-t-white border-slate-300" /> : null}
                       Approve
                     </button>
                     <button 
-                      className="px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl font-semibold hover:from-red-700 hover:to-rose-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base"
+                      disabled={actionLoadingId === r.id}
+                      className="px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl font-semibold hover:from-red-700 hover:to-rose-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
                       onClick={() => reject(r.id)}
                     >
+                      {actionLoadingId === r.id ? <LoadingSpinner size="sm" className="border-t-white border-slate-300" /> : null}
                       Reject
                     </button>
                     <button
-                      className="px-4 sm:px-6 py-2.5 sm:py-3 bg-slate-200 text-slate-800 rounded-xl font-semibold hover:bg-slate-300 transition-all duration-200 text-sm sm:text-base"
-                      onClick={async () => {
-                        if (!confirm("Delete this receipt? This cannot be undone.")) return;
-                        await fetch(`/api/receipts/${r.id}`, { method: "DELETE" });
-                        await loadAll();
-                      }}
+                      disabled={actionLoadingId === r.id}
+                      className="px-4 sm:px-6 py-2.5 sm:py-3 bg-slate-200 text-slate-800 rounded-xl font-semibold hover:bg-slate-300 transition-all duration-200 text-sm sm:text-base disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      onClick={() => deleteReceipt(r.id)}
                     >
+                      {actionLoadingId === r.id ? <LoadingSpinner size="sm" /> : null}
                       Delete
                     </button>
                   </div>
@@ -451,9 +523,17 @@ export default function AdminPage() {
             <div className="flex justify-end">
               <button 
                 type="submit"
-                className="px-6 sm:px-8 py-2.5 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base"
+                disabled={submittingExpense}
+                className="px-6 sm:px-8 py-2.5 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-semibold hover:from-green-700 hover:to-emerald-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none flex items-center gap-2"
               >
-                Save Expense
+                {submittingExpense ? (
+                  <>
+                    <LoadingSpinner size="sm" className="border-t-white border-slate-300" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save Expense"
+                )}
               </button>
             </div>
           </form>
@@ -490,13 +570,11 @@ export default function AdminPage() {
                 </div>
                     <div className="ml-0 sm:ml-4">
                       <button
-                        className="px-4 sm:px-6 py-2 sm:py-2.5 bg-slate-200 text-slate-800 rounded-xl font-semibold hover:bg-slate-300 transition-all duration-200 text-sm sm:text-base"
-                        onClick={async () => {
-                          if (!confirm("Delete this expense? This cannot be undone.")) return;
-                          await fetch(`/api/expenses/${x.id}`, { method: "DELETE" });
-                          await loadAll();
-                        }}
+                        disabled={actionLoadingId === x.id}
+                        className="px-4 sm:px-6 py-2 sm:py-2.5 bg-slate-200 text-slate-800 rounded-xl font-semibold hover:bg-slate-300 transition-all duration-200 text-sm sm:text-base disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+                        onClick={() => deleteExpense(x.id)}
                       >
+                        {actionLoadingId === x.id ? <LoadingSpinner size="sm" /> : null}
                         Delete
                       </button>
                     </div>

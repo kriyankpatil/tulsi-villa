@@ -2,47 +2,48 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function SignInPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    const res = await fetch("/api/auth/signin", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, password }),
-    });
-    if (!res.ok) {
-      const text = await res.text();
-      let msg = "Sign in failed";
-      try { msg = (JSON.parse(text)?.error as string) || msg; } catch {}
-      setError(msg);
-      return;
-    }
-    
-    const meRes = await fetch("/api/auth/me");
-    const meText = await meRes.text();
-    const me = meText ? JSON.parse(meText) : null;
-    
-    // Security check: Prevent admin users from logging in through member signin
-    if (me?.role === "ADMIN") {
-      setError("Admin users must use the admin signin page");
-      // Clear the session since admin shouldn't be here
-      await fetch("/api/auth/signout", { method: "POST" });
-      return;
-    }
-    
-    // Only allow MEMBER role users to proceed
-    if (me?.role === "MEMBER") {
-      router.push("/member");
-    } else {
-      setError("Invalid user role. Please contact administrator.");
-      await fetch("/api/auth/signout", { method: "POST" });
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/signin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, password }),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        let msg = "Sign in failed";
+        try { msg = (JSON.parse(text)?.error as string) || msg; } catch {}
+        setError(msg);
+        return;
+      }
+      const meRes = await fetch("/api/auth/me");
+      const meText = await meRes.text();
+      const me = meText ? JSON.parse(meText) : null;
+      if (me?.role === "ADMIN") {
+        setError("Admin users must use the admin signin page");
+        await fetch("/api/auth/signout", { method: "POST" });
+        return;
+      }
+      if (me?.role === "MEMBER") {
+        router.push("/member");
+      } else {
+        setError("Invalid user role. Please contact administrator.");
+        await fetch("/api/auth/signout", { method: "POST" });
+      }
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -112,9 +113,17 @@ export default function SignInPage() {
               
               <button 
                 type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2.5 sm:py-3 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-sm sm:text-base"
+                disabled={loading}
+                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2.5 sm:py-3 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-sm sm:text-base disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
               >
-                Sign in
+                {loading ? (
+                  <>
+                    <LoadingSpinner size="sm" className="border-t-white border-slate-300" />
+                    Signing in...
+                  </>
+                ) : (
+                  "Sign in"
+                )}
               </button>
             </form>
             
