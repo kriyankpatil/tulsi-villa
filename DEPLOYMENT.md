@@ -56,6 +56,19 @@ npx prisma db push
 ### **5. Update Database URL**
 Replace `DATABASE_URL` in Vercel with your production database connection string.
 
+## **Migrate to Hostinger (Custom Domain)**
+
+To move from Vercel to Hostinger and use your own domain while **keeping Supabase** as-is, see the full guide:
+
+**[HOSTINGER-MIGRATION.md](./HOSTINGER-MIGRATION.md)**
+
+- **Managed Node.js** (Business/Cloud): Deploy via GitHub in hPanel, set env vars, attach your domain.
+- **VPS**: SSH, Node.js, PM2, Nginx, SSL (Certbot). Full steps in the guide.
+
+No database migration needed—only app hosting and DNS change.
+
+---
+
 ## **Alternative Deployment Options**
 
 ### **Railway Deployment**
